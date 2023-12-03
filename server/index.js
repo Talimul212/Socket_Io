@@ -3,7 +3,6 @@ const app = express();
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
-const { log } = require("console");
 
 app.use(cors());
 
@@ -17,22 +16,29 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  console.log(`user connect :${socket.id}`);
+  console.log(`User connected: ${socket.id}`);
 
   socket.on("join_room", (data) => {
     socket.join(data);
+    console.log(`User ${socket.id} joined room ${data}`);
   });
 
-  //spacieficy person can be see the message
   socket.on("send_message", (data) => {
-    console.log(data);
-    socket.to(data.room).emit("receive_message", data);
+    console.log(
+      `Message received in room ${data.room} from user ${socket.id}: ${data.message}`
+    );
+
+    // Emit the received message to all clients in the specified room
+    io.to(data.room).emit("receive_message", data);
+
+    // Alternatively, to exclude the sender, use the following line instead
+    // socket.to(data.room).emit("receive_message", data);
   });
 
-  //all can be see the message
-  //   socket.on("send_message", (data) => {
-  //     socket.broadcast.emit("receive_message", data);
-  //   });
+  socket.on("disconnect", () => {
+    console.log(`User disconnected: ${socket.id}`);
+    // Additional logic can be added here for handling disconnections
+  });
 });
 
 server.listen(3001, () => {
