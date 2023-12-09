@@ -1,9 +1,8 @@
 const express = require("express");
 const app = express();
 const http = require("http");
-const { Server } = require("socket.io");
 const cors = require("cors");
-
+const { Server } = require("socket.io");
 app.use(cors());
 
 const server = http.createServer(app);
@@ -16,31 +15,22 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  console.log(`User connected: ${socket.id}`);
+  console.log(`User Connected: ${socket.id}`);
 
   socket.on("join_room", (data) => {
     socket.join(data);
-    console.log(`User ${socket.id} joined room ${data}`);
+    console.log(`User with ID: ${socket.id} joined room: ${data}`);
   });
 
   socket.on("send_message", (data) => {
-    console.log(
-      `Message received in room ${data.room} from user ${socket.id}: ${data.message}`
-    );
-
-    // Emit the received message to all clients in the specified room
-    io.to(data.room).emit("receive_message", data);
-
-    // Alternatively, to exclude the sender, use the following line instead
-    // socket.to(data.room).emit("receive_message", data);
+    socket.to(data.room).emit("receive_message", data);
   });
 
   socket.on("disconnect", () => {
-    console.log(`User disconnected: ${socket.id}`);
-    // Additional logic can be added here for handling disconnections
+    console.log("User Disconnected", socket.id);
   });
 });
 
 server.listen(3001, () => {
-  console.log("SERVER IS RUNNING");
+  console.log("SERVER RUNNING");
 });
